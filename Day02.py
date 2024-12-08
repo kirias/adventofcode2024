@@ -1,8 +1,8 @@
 safe = 0
 
-def is_safe(values, index):
-    if index >= 0:
-        del values[index]
+def is_safe(values, without_index):
+    if without_index >= 0:
+        del values[without_index]
     prev_val = values[0]
     diffFirst = prev_val - values[1]
     if diffFirst == 0:
@@ -22,21 +22,21 @@ with open('inputs/02.txt', 'r') as file:
         if is_safe(line_split, -1) == -1:
             safe += 1
 
-print("Part 1: {0}".format(safe))
+print(f"Part 1: {safe}")
 
 safe = 0
 with open('inputs/02.txt', 'r') as file:
     for line in file:
         line_split = list(map(int, line.rstrip().split(' ')))
-        unsave_index = is_safe(line_split, -1)
-        if unsave_index == -1:
+        unsafe_index = is_safe(line_split, -1)
+        if unsafe_index == -1:
             safe += 1
             continue
 
-        if (is_safe(line_split.copy(), unsave_index) == -1 or
-            is_safe(line_split.copy(), unsave_index - 1) == -1 or
-                (unsave_index == 2 and is_safe(line_split.copy(), 0) == -1)):
+        if (is_safe(line_split.copy(), unsafe_index) == -1 or
+            is_safe(line_split.copy(), unsafe_index - 1) == -1 or
+                (unsafe_index == 2 and is_safe(line_split.copy(), 0) == -1)):
             safe += 1
             continue
 
-print("Part 2: {0}".format(safe))
+print(f"Part 2: {safe}")

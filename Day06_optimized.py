@@ -30,18 +30,6 @@ class Cell:
 cells = []
 start = None
 
-def print_cell():
-    print('--------')
-    for row in cells:
-        for cell in row:
-            if cell.obstacle:
-                print('#', end='')
-            elif cell.visited:
-                print('x', end='')
-            else:
-                print('.', end='')
-        print('')
-
 def check_loop(start, speed_down, speed_right):
     global cells
     visits = set()
@@ -96,7 +84,6 @@ def binary_search_closest(arr, x, greater, index = False):
 def next_obstacle(start, speed_down, speed_right):
     global cells, x_obst, y_obst
     res = 0
-    # print_cell()
     if speed_down == 0:
         res = binary_search_closest(y_obst[start.y], start.x, speed_right == 1)
         if res >= 0:
@@ -126,7 +113,6 @@ def check_loop_w_cache(start, speed_down, speed_right):
             speed_down, speed_right = rotate90(speed_down, speed_right)
 
             start = next
-            # print_cell()
             if (next.x, next.y, speed_down, speed_right) in visits:
                 return True
             visits.add((next.x, next.y, speed_down, speed_right))

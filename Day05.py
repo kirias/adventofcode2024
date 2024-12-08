@@ -50,6 +50,6 @@ with open('inputs/05.txt', 'r') as file:
                 sum_2 += get_middle(nums)
 
 
-print("Part 1: {0}".format(sum))
-print("Part 2: {0}".format(sum_2))
+print(f"Part 1: {sum}")
+print(f"Part 2: {sum_2}")
 

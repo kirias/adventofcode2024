@@ -49,18 +49,6 @@ start = None
 
 count_obst = 0
 
-def print_cell():
-    print('--------')
-    for row in cells:
-        for cell in row:
-            if cell.obstacle:
-                print('#', end='')
-            elif cell.visited:
-                print('x', end='')
-            else:
-                print('.', end='')
-        print('')
-
 def check_loop(start, speed_down, speed_right, with_visited = False):
     global cells
     visited_cells = set()
@@ -75,7 +63,6 @@ def check_loop(start, speed_down, speed_right, with_visited = False):
             if with_visited:
                 visited_cells.add(next)
             start = next
-            # print_cell()
             if (next.visited_check(speed_down, speed_right)):
                 return -1, None
             next.visit(speed_down, speed_right)

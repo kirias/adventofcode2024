@@ -31,15 +31,15 @@ for row_i in range(len(matrix)):
         if row[col_i] == 'X':
             xmas_total += count_xmas(row_i, col_i)
 
-print("Part 1: {0}".format(xmas_total))
+print(f"Part 1: {xmas_total}")
 
 xmas_total = 0
 
 def is_x_mas(r, c):
     count_mas = 0
-    for i_offs in range(-1, 2, 2):
+    for i_offs in [-1, 1]:
         di = 1 if i_offs == -1 else -1
-        for j_offs in range(-1, 2, 2):
+        for j_offs in [-1, 1]:
             dj = 1 if j_offs == -1 else -1
             for i, char in enumerate('MAS'):
                 next_i = r + i_offs + di * i
@@ -61,4 +61,4 @@ for row_i in range(len(matrix)):
             if is_x_mas(row_i, col_i):
                 xmas_total += 1
 
-print("Part 2: {0}".format(xmas_total))
+print(f"Part 2: {xmas_total}")

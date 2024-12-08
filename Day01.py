@@ -15,15 +15,11 @@ for x in range(len(left)):
     diff = abs(left[x] - right[x])
     sum += diff
 
-print("Part 1: {0}".format(sum))
-
+print(f"Part 1: {sum}")
 
 counts = {}
 for x in right:
-    if x not in counts:
-        counts[x] = 1
-    else:
-        counts[x] = counts[x] + 1
+    counts[x] = counts[x] + 1 if x in counts else 1
 
 sum = 0
 
@@ -31,4 +27,4 @@ for x in left:
     if x in counts:
         sum += counts[x] * x
 
-print("Part 2: {0}".format(sum))
+print(f"Part 2: {sum}")
