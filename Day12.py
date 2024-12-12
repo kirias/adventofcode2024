@@ -5,7 +5,6 @@ start_time = time.time()
 matrix = []
 width = 0
 height = 0
-region_starts = []
 regions = []
 regions_borders = []
 mapped_to_regions = set()
@@ -13,39 +12,27 @@ mapped_to_regions = set()
 def is_valid(y, x):
     return x >=0 and y >= 0 and x < width and y < height
 
+def get_region_id(y, x):
+    return matrix[y][x] if is_valid(y, x) else None
+
 def check_region(start):
-    if start not in mapped_to_regions:
-        to_check_list = []
-        region = set()
-        regions.append(region)
-        regions_borders.append(0)
-        reg_id = matrix[start[0]][start[1]]
+    to_check_list = []
+    region = set()
+    regions.append(region)
+    regions_borders.append(0)
+    reg_id = matrix[start[0]][start[1]]
 
-        to_check_list.append(start)
-        while len(to_check_list) > 0:
-            check = to_check_list.pop()
-            if check not in mapped_to_regions:
-                mapped_to_regions.add(check)
-                region.add(check)
-                y, x = check
+    to_check_list.append(start)
+    while len(to_check_list) > 0:
+        check = to_check_list.pop()
+        if check not in mapped_to_regions:
+            mapped_to_regions.add(check)
+            region.add(check)
+            y, x = check
 
-                if is_valid(y - 1, x) and matrix[y - 1][x] == reg_id:
-                    to_check_list.append((y - 1, x))
-                else:
-                    regions_borders[-1] += 1
-
-                if is_valid(y, x - 1) and matrix[y][x - 1] == reg_id:
-                    to_check_list.append((y, x - 1))
-                else:
-                    regions_borders[-1] += 1
-
-                if is_valid(y + 1, x) and matrix[y + 1][x] == reg_id:
-                    to_check_list.append((y + 1, x))
-                else:
-                    regions_borders[-1] += 1
-
-                if is_valid(y, x + 1) and matrix[y][x + 1] == reg_id:
-                    to_check_list.append((y, x + 1))
+            for (y_neighbour, x_neighbour) in [(y - 1, x), (y, x - 1), (y + 1, x), (y, x + 1)]:
+                if get_region_id(y_neighbour, x_neighbour) == reg_id:
+                    to_check_list.append((y_neighbour, x_neighbour))
                 else:
                     regions_borders[-1] += 1
         
@@ -56,13 +43,14 @@ with open('inputs/12.txt', 'r') as file:
         matrix.append(row)
         for x, ch in enumerate(line.rstrip()):
             row.append(ch)
-            region_starts.append((y, x))
 
 height = len(matrix)
 width = len(matrix[0])
 
-for start in region_starts:
-    check_region(start)
+for row in range(height):
+    for cell in range(width):
+        if (row, cell) not in mapped_to_regions:
+            check_region((row, cell))
 
 sum = 0
 for i, region in enumerate(regions):
@@ -71,6 +59,34 @@ for i, region in enumerate(regions):
 print(f"Part 1: {sum}") # 1477762
 
 sum2 = 0
+
+def count_borders_x(min_x, max_x, y_line, region_id, top):
+    border = False
+    borders = 0
+    neighbour_offset = -1 if top else 1
+    for dx in range(min_x, max_x + 1):
+        if (y_line, dx) in region and get_region_id(y_line + neighbour_offset, dx) != region_id:
+            border = True
+        elif border:
+            borders += 1
+            border = False
+    if border:
+        borders += 1
+    return borders
+
+def count_borders_y(min_y, max_y, x_line, region_id, top):
+    border = False
+    borders = 0
+    neighbour_offset = -1 if top else 1
+    for dy in range(min_y, max_y + 1):
+        if (dy, x_line) in region and get_region_id(dy, x_line + neighbour_offset) != region_id:
+            border = True
+        elif border:
+            borders += 1
+            border = False
+    if border:
+        borders += 1
+    return borders
 
 for region in regions:
     (y, x) = next(iter(region))
@@ -81,52 +97,12 @@ for region in regions:
     max_x = max([x for (_, x) in region])
     borders = 0
     for scan_y in range(min_y, max_y + 1):
-        border = False
-        for dx in range(min_x, max_x + 1):
-            if (scan_y, dx) in region and (not is_valid(scan_y - 1, dx) or matrix[scan_y - 1][dx] != id):
-                border = True
-            elif border:
-                borders += 1
-                border = False
-        if border:
-            borders += 1
-            border = False
-
-    for scan_y in range(max_y, min_y - 1, -1):
-        border = False
-        for dx in range(min_x, max_x + 1):
-            if (scan_y, dx) in region and (not is_valid(scan_y + 1, dx) or matrix[scan_y + 1][dx] != id):
-                border = True
-            elif border:
-                borders += 1
-                border = False
-        if border:
-            borders += 1
-            border = False
+        borders += count_borders_x(min_x, max_x, scan_y, id, True)
+        borders += count_borders_x(min_x, max_x, scan_y, id, False)
 
     for scan_x in range(min_x, max_x + 1):
-        border = False
-        for dy in range(min_y, max_y + 1):
-            if (dy, scan_x) in region and (not is_valid(dy, scan_x - 1) or matrix[dy][scan_x - 1] != id):
-                border = True
-            elif border:
-                borders += 1
-                border = False
-        if border:
-            borders += 1
-            border = False
-
-    for scan_x in range(max_x, min_x - 1, -1):
-        border = False
-        for dy in range(min_y, max_y + 1):
-            if (dy, scan_x) in region and (not is_valid(dy, scan_x + 1) or matrix[dy][scan_x + 1] != id):
-                border = True
-            elif border:
-                borders += 1
-                border = False
-        if border:
-            borders += 1
-            border = False
+        borders += count_borders_y(min_y, max_y, scan_x, id, True)
+        borders += count_borders_y(min_y, max_y, scan_x, id, False)
 
     sum2 += len(region) * borders
 
