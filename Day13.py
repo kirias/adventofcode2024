@@ -6,8 +6,8 @@ start_time = time.time()
 def solve(xa, ya, xb, yb, xp, yp, prize_offset):
     xp += prize_offset
     yp += prize_offset
-    p1 = (xb * yp / yb - xp) / (ya * xb / yb - xa)
-    p2 = (xa * yp / ya - xp) / (yb * xa / ya - xb)
+    p1 = (xb * yp - xp * yb) / (ya * xb - xa * yb)
+    p2 = (xa * yp - xp * ya) / (yb * xa - xb * ya)
     
     p1_int = round(p1)
     p2_int = round(p2)
