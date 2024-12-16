@@ -99,8 +99,9 @@ def astar_all_solutions(initial, test_goal_reached, calc_next, calc_heuristic):
 
         current_state = current_node.coord
         if test_goal_reached(current_state):
-            if solution_score == None or solution_score == current_node.score:
+            if solution_score == None or solution_score == current_node.cost:
                 solutions.append(current_node)
+                solution_score = current_node.cost
                 continue
             else:
                 return solutions
