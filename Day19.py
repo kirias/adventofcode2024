@@ -4,10 +4,11 @@ import functools
 start_time = time.time()
 
 towels = []
+towels_2 = []
 patterns = 0
 patterns_all = 0
 
-@functools.cache
+
 def check_pattern(pattern):
     for towel in towels:
         if pattern == towel:
@@ -17,7 +18,7 @@ def check_pattern(pattern):
                 return 1
     return 0
 
-
+@functools.cache
 def check_pattern_all(pattern):
     possible_patterns = 0
     for towel in towels:
@@ -41,7 +42,7 @@ with open('inputs/19.txt', 'r') as file:
     
 
 print(f"Part 1: {patterns}") # 233
-print(f"Part 2: {patterns_all}") # 671 - too low
+print(f"Part 2: {patterns_all}") # 691316989225259
 
 
-print(f"Time: {time.time() - start_time}") # 
+print(f"Time: {time.time() - start_time}") # 0.802564
