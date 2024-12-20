@@ -69,15 +69,16 @@ def calc_cheat_exits(initial, cheat_length, entry_cost):
         for height in range(cheat_length + 1 - width):
             if width == 0 and height == 0:
                 continue
-            for mx in [0] if width == 0 else [-1, 1]:
-                 for my in [0] if height == 0 else [-1, 1]:
-                    ny = y + height * my
-                    nx = x + width * mx
+            for dx in [0] if width == 0 else [-width, width]:
+                 for dy in [0] if height == 0 else [-height, height]:
+                    ny = y + dx
+                    nx = x + dy
                     if ny >= 0 and nx >= 0 and ny < HEIGHT and nx < WIDTH:
                         if maze[ny][nx] == '.':
                             exit_cost = all_lengths_reverse.get((ny, nx))
-                            if entry_cost + width + height + exit_cost + SAVE_CHEAT <= shortest:
-                                exits_count += 1
+                            if exit_cost != None:
+                                if entry_cost + width + height + exit_cost + SAVE_CHEAT <= shortest:
+                                    exits_count += 1
     return exits_count
         
 def calc_next_steps(state):
