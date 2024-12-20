@@ -1,7 +1,6 @@
 import time
 from heapq import heappush, heappop
 
-
 start_time = time.time()
 
 maze = []
@@ -56,97 +55,54 @@ def astar(initial, test_goal_reached, calc_next, calc_heuristic):
             if not shortest_length:
                 shortest_length = current_node.cost
             continue
-        for (child, cost) in calc_next(current_state):
+        for (child, cost) in calc_next(current_state, False):
             new_cost = current_node.cost + cost
             if child not in explored or explored[child] > new_cost:
                 explored[child] = new_cost
                 frontier.push(Node(child, current_node, new_cost, calc_heuristic(child)))
     return explored, shortest_length
 
-def astar_in_a_wall(initial, count_walls, entry_cost, test_goal_reached, calc_next):
+def calc_cheat_exits(initial, cheat_length, entry_cost, test_goal_reached, calc_next):
     frontier = []
-    frontier.append((Node(initial, None, 0, 0), count_walls + 1, entry_cost, None))
+    frontier.append((Node(initial, None, 0, 0), cheat_length, entry_cost))
 
     explored = { initial: 0 }
 
-    count_walls_initial = count_walls + 1
+    cheat_length_initial = cheat_length
 
     exits = set()
-    first = True
 
     while len(frontier) > 0:
-        current_node, count_walls, entry_cost, first_entry = frontier.pop()
+        current_node, cheat_length, entry_cost = frontier.pop()
 
         current_state = current_node.coord
-        if not first:
-            goal_reached, can_continue_cheat = test_goal_reached(current_state, entry_cost, count_walls_initial - count_walls, count_walls)
-            if goal_reached == True:
-                # if maze[current_node.parent.coord[0]][current_node.parent.coord[1]] == '#':
-                    # if (*first_entry, *current_state) not in exits:
-                    #     print_cheat(current_node)
-                    exits.add((*first_entry, *current_state))
-            if not can_continue_cheat:
-                continue
-        for (child, cost) in calc_next(current_state, first):
+
+        goal_reached, cheat_available = test_goal_reached(current_state, entry_cost, cheat_length_initial - cheat_length, cheat_length)
+        if goal_reached == True:
+            exits.add((*initial, *current_state))
+        if not cheat_available:
+            continue
+        for (child, cost) in calc_next(current_state, True):
             new_cost = current_node.cost + cost
             if child not in explored or explored[child] > new_cost:
                 explored[child] = new_cost
-                frontier.append(((Node(child, current_node, new_cost, 0)), count_walls - 1, entry_cost, initial if first_entry == None else first_entry))
-        if first:
-            first = False
+                frontier.append(((Node(child, current_node, new_cost, 0)), cheat_length - 1, entry_cost))
     return len(exits)
 
-def print_cheat(node):
-    for y, row in enumerate(maze):
-        for x, i in enumerate(row):
-            if (y, x) == start_pos:
-                print('S', end='')
-            elif (y, x) == end:
-                print('E', end='')
-            elif node.contains((y, x)):
-                if i == '.':
-                    print('o', end='')
-                else:
-                    print('O', end='')
-            else:
-                print(i, end='')
-        print()
-
-def is_end_reached(state):
-    return end == state
-
-def is_start_reached(state):
-    return start_pos == state
-
-def is_cheat_goal_reached(state, entry_cost, cheat_len, walls_left):
+def is_cheat_goal_reached(state, entry_cost, cheat_len, cheat_left):
     y, x = state
     if (maze[y][x] == '#'):
-        return None, walls_left > 0
+        return None, cheat_left > 0
     exit_cost = all_lengths_reverse.get((y, x))
-    # if entry_cost + SAVE_CHEAT + cheat_len + exit_cost == shortest:
-    #     breakpoint()
-    return entry_cost + SAVE_CHEAT + cheat_len + exit_cost <= shortest, walls_left > 0
+    return entry_cost + SAVE_CHEAT + cheat_len + exit_cost <= shortest, cheat_left > 0
         
-
-def calc_next_steps(state):
+def calc_next_steps(state, ignore_walls):
     y, x = state
     for dy, dx in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
         ny = y + dy
         nx = x + dx
         if ny >= 0 and nx >= 0 and ny < HEIGHT and nx < WIDTH:
-            if maze[ny][nx] == '.':
-                yield ((ny, nx), 1)
-
-
-def calc_cheat_next_steps(state, first):
-    y, x = state
-    for dy, dx in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
-        ny = y + dy
-        nx = x + dx
-        if ny >= 0 and nx >= 0 and ny < HEIGHT and nx < WIDTH:
-            # if first and maze[ny][nx] == '#':
-            #     yield ((ny, nx), 1)
-            # elif not first:
+            if ignore_walls or maze[ny][nx] == '.':
                 yield ((ny, nx), 1)
 
 def calc_heuristics(state):
@@ -171,40 +127,27 @@ with open('inputs/20.txt', 'r') as file:
 HEIGHT = len(maze)
 WIDTH = len(maze[0])
 
-all_lengths, shortest = astar(start_pos, is_end_reached, calc_next_steps, calc_heuristics)
-all_lengths_reverse, shortest = astar(end, is_start_reached, calc_next_steps, calc_heuristics)
+all_lengths, shortest = astar(start_pos, lambda test : test == end, calc_next_steps, calc_heuristics)
+all_lengths_reverse, shortest = astar(end, lambda test : test == start_pos, calc_next_steps, calc_heuristics)
 
-
-
-WALLS_FIRST_CHEAT = 1
-WALLS_SECOND_CHEAT = 19
+LENGTH_FIRST_CHEAT = 2
+LENGTH_SECOND_CHEAT = 20
 SAVE_CHEAT = 100
 
 count_cheats = 0;
 for field, cost in all_lengths.items():
     if cost > shortest - SAVE_CHEAT - 1:
         continue
-    count_cheats += astar_in_a_wall(field, WALLS_FIRST_CHEAT, cost, is_cheat_goal_reached, calc_cheat_next_steps)
+    count_cheats += calc_cheat_exits(field, LENGTH_FIRST_CHEAT, cost, is_cheat_goal_reached, calc_next_steps)
 
 
 print(f"Part 1: {count_cheats}") # 1351
 
 count_cheats = 0;
 for field, cost in all_lengths.items():
-    if cost > shortest - SAVE_CHEAT - 1:
+    if cost + SAVE_CHEAT >= shortest:
         continue
-    count_cheats += astar_in_a_wall(field, WALLS_SECOND_CHEAT, cost, is_cheat_goal_reached, calc_cheat_next_steps)
+    count_cheats += calc_cheat_exits(field, LENGTH_SECOND_CHEAT, cost, is_cheat_goal_reached, calc_next_steps)
 print(f"Part 2: {count_cheats}") # 966130
 
-# tiles = set()
-# for solution in solutions:
-#     y, x, _ = solution.coord
-#     tiles.add((y, x))
-#     while solution.parent != None:
-#         solution = solution.parent
-#         y, x, _ = solution.coord
-#         tiles.add((y, x))
-
-# print(f"Part 2: {len(tiles)}") # 504
-
-# print(f"Time: {time.time() - start_time}") # 0.44216
+print(f"Time: {time.time() - start_time}") # 31.035425
