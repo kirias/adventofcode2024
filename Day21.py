@@ -1,5 +1,6 @@
 import time
-from functools import cache
+import functools
+from math import inf
 
 start_time = time.time()
 
@@ -88,6 +89,16 @@ def fill_in_all_conns(vals, connections):
 fill_in_all_conns(VALS, connections1)
 fill_in_all_conns(VALS2, connections2)
 
+# put optimal values manually
+connections2[('A', '<')] = { 'v<<' }
+connections2[('<', 'A')] = { '>>^' }
+
+connections2[('^', '>')] = { 'v>' }
+connections2[('>', '^')] = { '<^' }
+
+connections2[('A', 'v')] = { '<v' }
+connections2[('v', 'A')] = { '^>' }
+
 def create_paths(line, connections):
     start = 'A'
     paths = []
@@ -113,34 +124,72 @@ def create_paths(line, connections):
 
     return paths
 
+@functools.cache
+def calc_path_len(line):
+    start = 'A'
+    path_len = 0
 
-def process(line):
+    for c in line:
+        if c == start:
+            path_len += 1
+        else:
+            shortest_paths = connections2[(start, c)]
+            shortest_path = next(iter(shortest_paths))
+            min_len = len(shortest_path) + 1
+            path_len += min_len
+        start = c
+
+    return path_len
+
+def get_path(from1, to):
+    if from1 == to:
+        return ''
+    else:
+        shortest_paths = connections2[(from1, to)]
+        return next(iter(shortest_paths))
+    
+
+@functools.cache
+def get_path_len(path, gen):
+    if gen == 0:
+        return calc_path_len(path)
+    else:
+        len = 0
+        start = 'A'
+        for c in path:
+            len += get_path_len(get_path(start, c) + 'A', gen - 1)
+            start = c
+        return len
+
+
+def process(line, count_panels):
     paths = create_paths(line, connections1)
 
-    paths_2 = []
-    for p in paths:
-        paths_2.extend(create_paths(p, connections2))
+    minimal_path_len = inf
 
-    paths_3 = []
-    for p in paths_2:
-        paths_3.extend(create_paths(p, connections2))
+    for path in paths:
+        path_len = get_path_len(path, count_panels - 1)
+        if path_len < minimal_path_len:
+            minimal_path_len = path_len
 
-    min_length = min(len(ele) for ele in paths_3)
-
-    return int(line[0:-1]) * min_length
-
-
+    return int(line[0:-1]) * minimal_path_len
 
 
 with open('inputs/21.txt', 'r') as file:
     sum = 0
     for y, line in enumerate(file):
         if line.rstrip():
-            sum += process(line.rstrip())
+            sum += process(line.rstrip(), 2)
 
 
 print(f"Part 1: {sum}") # 155252
 
-# print(f"Part 2: {count_cheats}") #
+with open('inputs/21.txt', 'r') as file:
+    sum = 0
+    for y, line in enumerate(file):
+        if line.rstrip():
+            sum += process(line.rstrip(), 25)
 
-print(f"Time: {time.time() - start_time}") #
+print(f"Part 2: {sum}") # 195664513288128
+
+print(f"Time: {time.time() - start_time}") # 0.00090098
