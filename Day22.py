@@ -2,14 +2,17 @@ import time
 
 start_time = time.time()
 
+def secret(num):
+    num = ((num * 64) ^ num) % 16777216
+    num = ((num // 32) ^ num) % 16777216
+    num = ((num * 2048) ^ num) % 16777216
+    return num
 
 def process(initial):
     num = initial
     
     for i in range(2000):
-        num = ((num * 64) ^ num) % 16777216
-        num = ((num // 32) ^ num) % 16777216
-        num = ((num * 2048) ^ num) % 16777216
+        num = secret(num)
 
     return num
 
@@ -26,7 +29,6 @@ def hash(el1, el2, el3, el4):
         rez = rez ^ 0b1000
     return rez
 
-
 def process2(initial):
     num = initial
 
@@ -37,9 +39,7 @@ def process2(initial):
     last_digit_prev = initial % 10
     
     for i in range(2000):
-        num = ((num * 64) ^ num) % 16777216
-        num = ((num // 32) ^ num) % 16777216
-        num = ((num * 2048) ^ num) % 16777216
+        num = secret(num)
 
         last_digit_current = num % 10
         change_seq.append(last_digit_current - last_digit_prev)
@@ -50,13 +50,11 @@ def process2(initial):
                 price_history[hashed] = last_digit_prev
     return price_history
 
-
 with open('inputs/22.txt', 'r') as file:
     sum = 0
     for y, line in enumerate(file):
         if line.rstrip():
             sum += process(int(line.rstrip()))
-
 
 with open('inputs/22.txt', 'r') as file:
     price_changes = {}
@@ -71,7 +69,5 @@ with open('inputs/22.txt', 'r') as file:
     max_count = max([price_changes[x] for x in price_changes])
 
 print(f"Part 1: {sum}") # 16619522798
-
 print(f"Part 2: {max_count}") # 1854
-
 print(f"Time: {time.time() - start_time}") # 3.3168
