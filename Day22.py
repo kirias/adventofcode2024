@@ -61,29 +61,19 @@ with open('inputs/22.txt', 'r') as file:
 
 
 with open('inputs/22.txt', 'r') as file:
-    price_histories = []
-    price_changes = set()
+    price_changes = {}
     for y, line in enumerate(file):
         if line.rstrip():
             price_history = process2(int(line.rstrip()))
-            price_changes.update(price_history.keys())
-            price_histories.append(price_history)
+            for ph in price_history:
+                if ph not in price_changes:
+                    price_changes[ph] = 0
+                price_changes[ph] = price_changes[ph] + price_history[ph]
 
-    max_count = 0
-    for pc in price_changes:
-        current_count = 0
-        for ph in price_histories:
-            if pc in ph:
-                current_count += ph[pc]
-        if current_count > max_count:
-            max_count = current_count
-
-
-
+    max_count = max([price_changes[x] for x in price_changes])
 
 print(f"Part 1: {sum}") # 16619522798
 
-
 print(f"Part 2: {max_count}") # 1854
 
-print(f"Time: {time.time() - start_time}") # 14.0106
+print(f"Time: {time.time() - start_time}") # 3.5562
