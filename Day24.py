@@ -1,6 +1,7 @@
 import time
 import re
 
+
 start_time = time.time()
 
 regs = {}
@@ -27,6 +28,8 @@ with open('inputs/24.txt', 'r') as file:
         else:
             registers_parse = False
 
+logic_copy = logic.copy()
+
 while len(logic) > 0:
     for l in logic:
         (out, op1, op2, type) = l
@@ -51,12 +54,8 @@ for r in regs:
 
 print(f"Part 1: {answer}") # 66055249060558
 
-        
 
 
-
-
-
-# print(f"Part 1: {part2}") # ac,ed,fh,kd,lf,mb,om,pe,qt,uo,uy,vr,wg
+# fhp,rmv,vmr,z16,z20,z27,z33,z34
 
 print(f"Time: {time.time() - start_time}") # 
